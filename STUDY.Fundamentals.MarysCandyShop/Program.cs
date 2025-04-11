@@ -1,5 +1,5 @@
 ﻿var isMenuRunning = true;
-string docPath = @"C:\Users\LAMPROS\Desktop\C# Academy\StudyProjects\STUDY.Fundamentals.MarysCandyShop\STUDY.Fundamentals.MarysCandyShop\history.txt";
+string docPath = @"C:\Users\LAMPROS\Desktop\C# Academy\StudyProjects\STUDY.Fundamentals.MarysCanhdyShop\STUDY.Fundamentals.MarysCandyShop\history.txt";
 string[] candyNames = { "Rainbow Lollipops", "Cotton Candy Clouds", "Choco-Caramel Delights", "Gummy Bear Bonanza", "Minty Chocolate Truffles", "Jellybean Jamboree", "Fruity Taffy Twists", "Sour Patch Surprise", "Crispy Peanut Butter Cups", "Rock Candy Crystals" };
 
 var products = new Dictionary<int, string>();
@@ -8,11 +8,12 @@ var divide = "---------------------------------";
 
 //SeedData();
 
-if (File.Exists(docPath))
-{
-    LoadData();
-}
+//if (File.Exists(docPath))
+//{
+//    LoadData();
+//}
 
+LoadData();
 
 while (isMenuRunning)
 {
@@ -63,7 +64,7 @@ void AddProduct()
     Console.WriteLine("Product name:");
     var product = Console.ReadLine();
     var index = products.Count();
-    products.Add(index + 1, product.Trim());
+    products.Add(index, product.Trim());
 }
 
 void DeleteProduct(string message)
@@ -126,27 +127,46 @@ int GetDaysSinceOpening()
 
 void SaveProducts()
 {
-    using (StreamWriter outputFile = new StreamWriter(docPath))
+    try
     {
-        foreach (var product in products)
+        using (StreamWriter outputFile = new StreamWriter(docPath))
         {
-            outputFile.WriteLine($"{product.Key}, {product.Value}");
+            foreach (KeyValuePair<int, string> product in products)
+            {
+                outputFile.WriteLine($"{product.Key}, {product.Value}");
+            }
         }
+        Console.WriteLine("Products saved");
     }
-    Console.WriteLine("Products saved");
+    catch (Exception ex)
+    {
+        Console.WriteLine("There was an error when trying to save products: " + ex.Message);
+        Console.WriteLine(divide);
+        
+    }
+    
 }
 
 void LoadData()
 {
-    using (StreamReader reader = new(docPath))
+    try
     {
-        var line = reader.ReadLine();
-
-        while (line != null)
+        using (StreamReader reader = new(docPath))
         {
-            string[] parts = line.Split(',');
-            products.Add(int.Parse(parts[0]), parts[1]);
-            line = reader.ReadLine();
+            var line = reader.ReadLine();
+
+            while (line != null)
+            {
+                string[] parts = line.Split(',');
+                products.Add(int.Parse(parts[0]), parts[1]);
+                line = reader.ReadLine();
+            }
         }
     }
+    catch (Exception ex) 
+    {
+        Console.WriteLine(ex.Message);
+        Console.WriteLine(divide);
+    }
+    
 }
