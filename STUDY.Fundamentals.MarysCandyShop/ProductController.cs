@@ -1,4 +1,6 @@
-﻿namespace STUDY.Fundamentals.MarysCandyShop;
+﻿using static STUDY.Fundamentals.MarysCandyShop.Enums;
+
+namespace STUDY.Fundamentals.MarysCandyShop;
 
 internal class ProductController
 {
@@ -10,19 +12,34 @@ internal class ProductController
         {
             using (StreamReader reader = new(Configuration.docPath))
             {
+                reader.ReadLine(); // Ignores the first line which is the column names.
                 var line = reader.ReadLine();
 
                 while (line != null)
                 {
                     string[] parts = line.Split(',');
 
-                    var product = new Product(int.Parse(parts[0]));
-                    product.Name = parts[1];
-                    product.Price = decimal.Parse(parts[2]);
+                    if (int.Parse(parts[1]) == (int)ProductType.ChocolateBar)
+                    {
+                        var product = new ChocolateBar(int.Parse(parts[0]));
+                        product.Name = parts[2];
+                        product.Price = decimal.Parse(parts[3]);
+                        product.CocoaPercentage = int.Parse(parts[4]);
+                        products.Add(product);
+                    }
+                    else
+                    {
+                        var product = new Lollipop(int.Parse(parts[0]));
+                        product.Name = parts[2];
+                        product.Price = decimal.Parse(parts[3]);
+                        product.Shape = parts[5];
+                        products.Add(product);
+                    }
 
-                    products.Add(product);
 
-                    line = reader.ReadLine();
+
+
+                        line = reader.ReadLine();
                 }
             }
         }
@@ -35,21 +52,23 @@ internal class ProductController
         return products;
     }
 
-    internal void AddProduct()
+    internal void AddProduct(Product product)
     {
         var id = GetProducts().Count;
 
-        Console.WriteLine("Product name:");
-        var name = Console.ReadLine();
-
-        Console.WriteLine("Product price:");
-        var price = decimal.Parse(Console.ReadLine());
         try
         {
             using (StreamWriter outputFile = new StreamWriter(Configuration.docPath, true))
             {
-                outputFile.WriteLine($"{id},{name},{price}");
+                if (outputFile.BaseStream.Length <= 3)
+                {
+                    outputFile.WriteLine($"Id,Type,Name,Price,CocoaPercentage,Shape");
+                }
+
+                var csvLine = product.GetProductForCsv(id); 
+                outputFile.WriteLine(csvLine);
             }
+
             Console.WriteLine("Product saved");
         }
         catch (Exception ex)

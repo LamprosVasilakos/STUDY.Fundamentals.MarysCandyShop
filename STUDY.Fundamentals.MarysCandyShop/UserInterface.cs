@@ -1,4 +1,8 @@
-﻿namespace STUDY.Fundamentals.MarysCandyShop;
+﻿using System.Drawing;
+using Spectre.Console;
+using static STUDY.Fundamentals.MarysCandyShop.Enums;
+
+namespace STUDY.Fundamentals.MarysCandyShop;
 
 internal static class UserInterface
 {
@@ -14,25 +18,36 @@ internal static class UserInterface
         {
             PrintHeader();
 
-            var usersChoice = Console.ReadLine().Trim().ToUpper();
+            var usersChoice = AnsiConsole.Prompt(
+                new SelectionPrompt<MainMenuOptions>()
+                 .Title("What would you like to do?")
+            .AddChoices(
+                MainMenuOptions.ViewProducts,
+                MainMenuOptions.AddProduct,
+                MainMenuOptions.DeleteProduct,
+                MainMenuOptions.UpdateProduct,
+                MainMenuOptions.QuitProgram)
+                );
+
             var menuMessage = "Press Any Key To Go Back to Menu";
 
             switch (usersChoice)
             {
-                case "A":
-                    productsController.AddProduct();
+                case MainMenuOptions.AddProduct:
+                    var product = GetProductInput();
+                    productsController.AddProduct(product);
                     break;
-                case "D":
+                case MainMenuOptions.DeleteProduct:
                     productsController.DeleteProduct("User chose D");
                     break;
-                case "V":
+                case MainMenuOptions.ViewProducts:
                     var products = productsController.GetProducts();
                     ViewProducts(products);
                     break;
-                case "U":
+                case MainMenuOptions.UpdateProduct:
                     productsController.UpdateProduct("User chose U");
                     break;
-                case "Q":
+                case MainMenuOptions.QuitProgram:
                     menuMessage = "Goodbye";
                     isMenuRunning = false;
                     break;
@@ -52,7 +67,7 @@ internal static class UserInterface
         Console.WriteLine(divide);
         foreach (var product in products)
         {
-            Console.WriteLine($"{product.Id}, {product.Name}, {product.Price}");
+            Console.WriteLine(product.GetProductForCsv(product.Id));
         }
         Console.WriteLine(divide);
     }
@@ -65,7 +80,6 @@ internal static class UserInterface
         var daysSinceOpening = Helpers.GetDaysSinceOpening();
         var todaysProfit = 5.5m;
         var targetAchieved = false;
-        string menu = GetMenu();
 
         Console.WriteLine(@$"{title}
 {divide}
@@ -73,17 +87,48 @@ Today's date: {dateTime}
 Days since opening: {daysSinceOpening}
 Today's profit: {todaysProfit}$
 Today's target achieved: {targetAchieved}
-{divide}
-{menu}");
+{divide}");
     }
 
-    private static string GetMenu()
+    private static Product GetProductInput()
     {
-        return "Choose one option:\n"
-            + 'V' + " to view products\n"
-            + 'A' + " to add product\n"
-            + 'D' + " to delete product\n"
-            + 'U' + " to update product\n"
-            + 'Q' + " to quit the program\n";
+        Console.WriteLine("Product name:");
+        var name = Console.ReadLine();
+
+        Console.WriteLine("Product price:");
+        var price = decimal.Parse(Console.ReadLine());
+
+        var type = AnsiConsole.Prompt(
+            new SelectionPrompt<ProductType>()
+            .Title("Product Type: ")
+            .AddChoices(
+                ProductType.Lollipop,
+                ProductType.ChocolateBar)
+            );
+
+        if(type == ProductType.ChocolateBar)
+        {
+            Console.WriteLine("Cocoa %");
+            var cocoa = int.Parse(Console.ReadLine());
+
+            return new ChocolateBar()
+            {
+                Name = name,
+                Price = price,
+                CocoaPercentage = cocoa
+            };
+        }
+
+        Console.WriteLine("Shape: ");
+        var shape = Console.ReadLine();
+
+        return new Lollipop()
+        {
+            Name = name,
+            Price = price,
+            Shape = shape
+        };
+
     }
+
 }
